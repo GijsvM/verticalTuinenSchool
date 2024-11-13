@@ -1,7 +1,7 @@
 #include <Arduino.h>
   const int luchtSensorPin = 4;
   const int vochtigheidSensorPin = 2;
-
+//comment
 void setup() {
 pinMode(luchtSensorPin,INPUT);
 pinMode(vochtigheidSensorPin,INPUT);
