@@ -21,6 +21,7 @@ unsigned long lastSensorReadTime = 0;
 unsigned long pumpStartTijd = 0;
 
 String sensorReadings;
+float sensorReadingsArr[3];
 bool pumpActive = false;
 
 String httpGETRequest(const char* serverName);
@@ -30,7 +31,7 @@ void setup() {
   pinMode(vochtigheidSensorPin, INPUT);
   pinMode(pompPin, OUTPUT);
   Serial.begin(115200);
-
+  WiFi.config(IPAddress(192,168,68,81), IPAddress(192,168,68,1), IPAddress(255,255,255,0));
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -42,6 +43,8 @@ void setup() {
 
 void loop() {
   unsigned long currentMillis = millis();
+  int lucht;
+  int vochtigheid;
 
   // Check if it's time to send HTTP GET request
   if (currentMillis - lastTime > timerDelay) {
@@ -69,7 +72,7 @@ void loop() {
 
             // Check for "pumpRuntime" and update the runtime
             if (strcmp(key, "pumpRuntime") == 0) {
-              pumpRuntime = (unsigned long)((int)value); // Update runtime
+              pumpRuntime = (unsigned long)((int)value); // Explicit cast to int/long
               Serial.print("Updated pump runtime to: ");
               Serial.println(pumpRuntime);
             }
@@ -97,25 +100,17 @@ void loop() {
     lastTime = currentMillis;
   }
 
-  // Isolated pump logic based on runtime
-  if (pumpActive) {
-    unsigned long elapsedTime = currentMillis - pumpStartTijd;
-    Serial.print("Elapsed Time: ");
-    Serial.println(elapsedTime);
-    Serial.print("Pump Runtime: ");
-    Serial.println(pumpRuntime);
-
-    if (elapsedTime >= pumpRuntime) {
-      digitalWrite(pompPin, LOW);
-      pumpActive = false;
-      Serial.println("Pump deactivated after runtime.");
-    }
+  // Turn off the pump after the runtime has elapsed
+  if (pumpActive && (currentMillis - pumpStartTijd >= pumpRuntime)) {
+    digitalWrite(pompPin, LOW);
+    pumpActive = false;
+    Serial.println("Pump deactivated after runtime.");
   }
 
   // Periodic sensor readings and POST request
   if (currentMillis - lastSensorReadTime >= sensorReadInterval) {
-    int lucht = analogRead(luchtSensorPin);
-    int vochtigheid = analogRead(vochtigheidSensorPin);  // dry = 1600, in water = 700
+    lucht = analogRead(luchtSensorPin);
+    vochtigheid = analogRead(vochtigheidSensorPin);  // dry = 1600, in water = 700
     Serial.print("Humidity: ");  
     Serial.println(vochtigheid);
     Serial.print("Air quality: ");  
