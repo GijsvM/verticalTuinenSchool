@@ -1,4 +1,4 @@
-# Vertical Tuinen (Vertical Gardens)
+# Vertical Tuinen
 
 This repository contains the code and schematics for **Vertical Tuinen**, a school project aimed at creating a smart vertical garden system that automates the watering of plants. The system is designed to be energy-efficient, modular, and controlled via an external Android application (developed by a team member and not included in this repository).
 
